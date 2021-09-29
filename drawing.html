@@ -3,7 +3,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
         <title>Line Drawing</title>
-        
+
         <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition;
         attribute vec4 vColor;
@@ -42,5 +42,19 @@
         </canvas>
         </div>
         <!-- Need some controls here to change colors -->
+        <div>
+            <select name="colors" id="colors">
+                <option value="0">Black</option>
+                <option value="1">Red</option>
+                <option value="2">Yellow</option>
+                <option value="3">Green</option>
+                <option value="4">Blue</option>
+                <option value="5">Magenta</option>
+                <option value="6">Cyan</option>
+            </select>
+        </div>
+        <div>
+          <button onclick="reset()">Clear</button>
+        </div>
     </body>
 </html>
