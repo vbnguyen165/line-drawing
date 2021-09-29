@@ -2,7 +2,9 @@
 
 var gl;
 const MAX_POINTS = 50;
-
+var cursor;
+var current_point;
+var current_n_points = 0;
 window.onload = function init() {
     var canvas = document.getElementById( "gl-canvas" );
 
@@ -22,6 +24,7 @@ window.onload = function init() {
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, sizeof['vec2'] * MAX_POINTS, gl.STATIC_DRAW);
     /*
         Setup the size of the buffer to hold MAX_POINTS number of vec2 objects (for vertices).
         Hint: You can find the size of the types using the sizeof dictionary from MV.js
@@ -33,6 +36,7 @@ window.onload = function init() {
 
     var cBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, sizeof['vec4'] * MAX_POINTS, gl.STATIC_DRAW);
     /*
         Setup the size of the buffer to hold MAX_POINTS number of vec4 objects (for color).
         Hint: You can find the size of the types using the sizeof dictionary from MV.js
@@ -47,6 +51,43 @@ window.onload = function init() {
         Make sure that when the page is refreshed, the dropdown list
         is set to the first value in the list.
     */
+    canvas.addEventListener("click", function(event){
+      if (current_point !== null) {
+        var temp = current_point;
+      }
+      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
+
+      current_point = vec2(2*event.clientX/canvas.width-1,
+           2*(canvas.height-event.clientY)/canvas.height-1);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 8, flatten(current_point));
+
+      gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
+      var t = vec4(1.0, 0.0, 0.0, 1.0);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 16, flatten(t));
+      current_n_points++;
+      if (current_n_points >= 2) {
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 8*(current_n_points + 1), flatten(temp));
+
+        gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
+        var t = vec4(1.0, 0.0, 0.0, 1.0);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 16*(current_n_points + 1), flatten(t));
+      }
+    } );
+
+    canvas.addEventListener("mousemove", function(mouseFollow){
+      // if (cursor === null) {
+      //   current_n_points = 1;
+      // }
+      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
+      cursor = vec2(2*event.clientX/canvas.width-1,
+        2*(canvas.height-event.clientY)/canvas.height-1);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(cursor));
+
+      gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
+      var t = vec4(1.0, 0.0, 0.0, 1.0);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(t));
+    });
 
     render();
 }
@@ -59,12 +100,26 @@ window.onload = function init() {
     Hint: check the book and the textbook examples on github
 */
 
+function mouseFollow(event) {
+    document.getElementById("coordinates").innerHTML = event.clientX + "," + event.clientY;
+}
+
 function render() {
     gl.clear( gl.COLOR_BUFFER_BIT );
+    if (cursor != null) {
+      gl.drawArrays(gl.POINTS, 0, 1);
+    }
+    if (current_point != null) {
+      gl.drawArrays(gl.LINES, 0, 2);
+    }
+    if (current_n_points >= 2) {
+      gl.drawArrays(gl.LINE_STRIP, 1, current_n_points);
+    }
 
     /*
         Add logic for rendering lines and the cursor point.
-        Use the techniques shown in class to have the function 
+        Use the techniques shown in class to have the function
         render multiple times to show an animation.
     */
+    window.requestAnimationFrame(render);
 }
