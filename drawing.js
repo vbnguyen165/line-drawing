@@ -52,41 +52,50 @@ window.onload = function init() {
         is set to the first value in the list.
     */
     canvas.addEventListener("click", function(event){
-      if (current_point !== null) {
-        var temp = current_point;
-      }
-      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
-
-      current_point = vec2(2*event.clientX/canvas.width-1,
-           2*(canvas.height-event.clientY)/canvas.height-1);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 8, flatten(current_point));
-
-      gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
-      var t = vec4(1.0, 0.0, 0.0, 1.0);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 16, flatten(t));
-      current_n_points++;
-      if (current_n_points >= 2) {
+      // if (current_point !== null) {
+      //   var temp = current_point;
+      // }
+      if (current_n_points < MAX_POINTS) {
+        current_n_points++;
         gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 8*(current_n_points + 1), flatten(temp));
+
+        current_point = vec2(2*event.clientX/canvas.width-1,
+             2*(canvas.height-event.clientY)/canvas.height-1);
+        gl.bufferSubData(gl.ARRAY_BUFFER, sizeof['vec2'] * (current_n_points - 2), flatten(current_point));
 
         gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
         var t = vec4(1.0, 0.0, 0.0, 1.0);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 16*(current_n_points + 1), flatten(t));
+        gl.bufferSubData(gl.ARRAY_BUFFER, sizeof['vec4'] * (current_n_points - 2), flatten(t));
+
+        if (current_n_points >= 2) {
+        cursor = null;
+        }
       }
-    } );
+
+    });
+    //   if (current_n_points >= 2) {
+    //     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
+    //     gl.bufferSubData(gl.ARRAY_BUFFER, 8*(current_n_points), flatten(temp));
+    //
+    //     gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
+    //     var t = vec4(1.0, 0.0, 0.0, 1.0);
+    //     gl.bufferSubData(gl.ARRAY_BUFFER, 16*(current_n_points), flatten(t));
+    //
+    //   }
+    // } );
 
     canvas.addEventListener("mousemove", function(mouseFollow){
-      // if (cursor === null) {
-      //   current_n_points = 1;
-      // }
+      if (current_n_points === 0) {
+        current_n_points = 1;
+      }
       gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
       cursor = vec2(2*event.clientX/canvas.width-1,
         2*(canvas.height-event.clientY)/canvas.height-1);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(cursor));
+      gl.bufferSubData(gl.ARRAY_BUFFER, sizeof['vec2'] * (current_n_points - 1), flatten(cursor));
 
       gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer);
       var t = vec4(1.0, 0.0, 0.0, 1.0);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(t));
+      gl.bufferSubData(gl.ARRAY_BUFFER, sizeof['vec4'] * (current_n_points - 1), flatten(t));
     });
 
     render();
@@ -100,20 +109,16 @@ window.onload = function init() {
     Hint: check the book and the textbook examples on github
 */
 
-function mouseFollow(event) {
-    document.getElementById("coordinates").innerHTML = event.clientX + "," + event.clientY;
-}
-
 function render() {
     gl.clear( gl.COLOR_BUFFER_BIT );
     if (cursor != null) {
-      gl.drawArrays(gl.POINTS, 0, 1);
+      gl.drawArrays(gl.POINTS, current_n_points - 1, 1);
     }
-    if (current_point != null) {
-      gl.drawArrays(gl.LINES, 0, 2);
+    if (current_n_points >= 2 & cursor != null) {
+      gl.drawArrays(gl.LINES, current_n_points - 2, 2);
     }
-    if (current_n_points >= 2) {
-      gl.drawArrays(gl.LINE_STRIP, 1, current_n_points);
+    if (current_n_points >= 3) {
+      gl.drawArrays(gl.LINE_STRIP, 0, current_n_points - 1);
     }
 
     /*
